@@ -1,6 +1,16 @@
 {{template "header" .}}
+
+<div class="px-6 mb-8">
+  <h1 class="py-4 text-4xl semibold tracking-tight">Contact</h1>
+  <p class="text-gray-800">
+    Email me at:
+    <a class="underline" href="mailto:jon@calhoun.io">jon@calhoun.io</a> or 
+    <a class="underline" href="mailto:jon@calhoun.io">zhuoyang1208@gmail.com</a>.
+  </p>
+</div>
+
 <div class="px-6">
-    <h1 class="py-4 text-4xl semibold tracking-tight">FAQ Page</h1>
+    <h1 class="py-4 text-4xl semibold tracking-tight">FAQ</h1>
     <ul class="grid grid-cols-2 gap-16">
         {{range .}}
             {{template "qa" .}}
