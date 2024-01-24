@@ -1,0 +1,21 @@
+<h1>Hello, welcome to my personal website!</h1>
+<p>
+    My name is {{.Name}} and I'm {{.Age}} years old.
+    My favorite foods are:
+    <ul>
+        {{range .FavFoods}}
+            <li>{{.}}</li>
+        {{end}}
+    </ul>
+    My contact info is:
+    <ul>
+        {{range $key, $value := .Contact}}
+            <li>{{$key}}: {{$value}}</li>
+        {{end}}
+    </ul>
+    {{if ge .Age 18}}
+    <p>I'm a fully-grown man!</p>
+    {{else}}
+    <p>I'm a teenager!</p>
+    {{end}}
+</p>

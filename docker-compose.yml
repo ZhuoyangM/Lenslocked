@@ -1,0 +1,16 @@
+version: "3.9"
+
+# Command to run containers: docker compose up
+# Command to stop containers: docker compose stop / ctrl+c
+# Command to remove containers: docker compose down
+# Command to start psql CLI: docker compose exec -it db psql -U baloo -d lenslocked
+
+services:
+  # Our Postgres database
+  db: # The service will be named db.
+    image: postgres # The postgres image will be used
+    restart: always # Always try to restart if this stops running
+    environment: # Provide environment variables
+      POSTGRES_USER: baloo # POSTGRES_USER env var w/ value baloo
+      POSTGRES_PASSWORD: junglebook
+      POSTGRES_DB: lenslocked
