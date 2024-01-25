@@ -42,14 +42,14 @@ func (g Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	data.UserID = context.User(r.Context()).ID
 	data.Title = r.FormValue("title")
 
-	gallery, err := g.GalleryService.Create(data.Title, data.UserID)
+	_, err := g.GalleryService.Create(data.Title, data.UserID)
 	if err != nil {
 		g.Templates.New.Execute(w, r, data, err)
 		return
 	}
 	// This page doesn't exist, but we will want to redirect here eventually.
-	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
-	http.Redirect(w, r, editPath, http.StatusFound)
+	//editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
 func (g Galleries) Edit(w http.ResponseWriter, r *http.Request) {
