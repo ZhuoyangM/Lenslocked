@@ -8,25 +8,24 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="min-h-screen bg-gray-100">
+<body class="flex flex-col min-h-screen bg-gray-100">
     <header class="bg-gradient-to-r from-blue-500 to-green-400 text-white">
         <nav class="px-8 py-6 flex items-center space-x-12">
             <div class="text-4xl font-serif">Lenslocked</div>
             <div class="">
-                <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/">
-                    Home
-                </a>
-                <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/contact">
-                    Contact
-                </a>
-                <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/faq">
-                    Contact & FAQ
-                </a>
+                {{if currentUser}}
+                    <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/">
+                        Home
+                    </a>
+                {{else}}
+                    <div class="flex-grow"></div>
+                {{end}}
+
             </div>
 
             {{if currentUser}}
                 <div class="flex-grow flex flex-row-reverse">
-                    <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/galleries">My Galleries</a>
+                    <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/galleries">Galleries</a>
                 </div>
             {{else}}
                 <div class="flex-grow"></div>
@@ -38,11 +37,13 @@
                         <div class="hidden">
                         {{csrfField}}
                         </div>
-                        <button type="submit">Sign out</button>
+                        <button type="submit">
+                            Sign out
+                        </button>
                     </form>
                 {{else}}
                     <a href="/signin">Sign in</a>
-                    <a href="/signup" class="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded">
+                    <a href="/signup" class="py-2 px-4 bg-blue-500 hover:bg-blue-700 rounded">
                         Sign up
                     </a>
                 {{end}}
@@ -72,6 +73,16 @@
 <!-- Each page's content goes here. -->
 
 {{define "footer"}}
+<footer class="bg-blue-200 text-blue-800 p-4 text-center mt-auto flex flex-col md:flex-row items-center justify-center">
+    <div class="mb-2 md:mb-0 md:mr-8">
+        <p class="text-sm">&copy; 2024 Lenslocked. All rights reserved.</p>
+    </div>
+    <div class="mb-2 md:mb-0 md:mr-8">
+        <a class="text-sm font-semibold hover:text-blue-100 pr-4" href="/contact">Contact</a>
+        <a class="text-sm font-semibold hover:text-blue-100" href="/faq">FAQ</a>
+    </div>
+</footer>
+
 <script>
     function closeAlert(event) {
         let closeable = event.target.closest(".closeable");
