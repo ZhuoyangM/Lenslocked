@@ -248,6 +248,8 @@ func (g Galleries) DeleteImage(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, editPath, http.StatusFound)
 }
 
+//ToDo: Add multidelete
+
 // Handle uploading images
 func (g Galleries) UploadImage(w http.ResponseWriter, r *http.Request) {
 	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
