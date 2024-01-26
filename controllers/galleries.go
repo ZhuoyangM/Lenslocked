@@ -232,24 +232,8 @@ func (g Galleries) galleryByID(w http.ResponseWriter, r *http.Request, opts ...g
 	return gallery, nil
 }
 
-// Delete the chosen image
-func (g Galleries) DeleteImage(w http.ResponseWriter, r *http.Request) {
-	filename := g.filename(w, r)
-	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
-	if err != nil {
-		return
-	}
-	err = g.GalleryService.DeleteImage(gallery.ID, filename)
-	if err != nil {
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
-		return
-	}
-	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
-	http.Redirect(w, r, editPath, http.StatusFound)
-}
-
 // TODO: Add multidelete
-func (g Galleries) DeleteMutiple(w http.ResponseWriter, r *http.Request) {
+func (g Galleries) DeleteImages(w http.ResponseWriter, r *http.Request) {
 	//TODO: Print selected images first
 	r.ParseForm()
 	selectedImages := r.Form["selectedImages[]"]
