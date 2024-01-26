@@ -178,6 +178,12 @@ func main() {
 		ProviderConfigs: cfg.OAuthProviders,
 	}
 
+	settingC := controllers.Setting{}
+	settingC.Templates.New = views.Must(views.ParseFS(
+		templates.FS,
+		"setting.gohtml", "tailwind.gohtml",
+	))
+
 	// Set up routers and routes
 	r := chi.NewRouter()
 	r.Use(csrfMw)
@@ -201,10 +207,17 @@ func main() {
 	r.Get("/reset-pw", usersC.ResetPassword)
 	r.Post("/reset-pw", usersC.ProcessResetPassword)
 	r.With(userMw.RequireUser).Post("/signout", usersC.ProcessSignOut)
+
 	r.Route("/users/me", func(r chi.Router) { //mounts on the pattern /users/me
 		r.Use(userMw.RequireUser)
 		r.Get("/", usersC.CurrentUser)
 	})
+
+	r.Route("/setting", func(r chi.Router) {
+		r.Use(userMw.RequireUser)
+		r.Get("/", settingC.RenderSetting)
+	})
+
 	r.Route("/galleries", func(r chi.Router) {
 		r.Get("/{id}", galleriesC.Show)
 		r.Get("/{id}/images/{filename}", galleriesC.Image)
