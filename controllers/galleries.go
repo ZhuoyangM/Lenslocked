@@ -232,23 +232,35 @@ func (g Galleries) galleryByID(w http.ResponseWriter, r *http.Request, opts ...g
 	return gallery, nil
 }
 
-// Delete the chosen image
-func (g Galleries) DeleteImage(w http.ResponseWriter, r *http.Request) {
-	filename := g.filename(w, r)
+// TODO: Add multidelete
+func (g Galleries) DeleteImages(w http.ResponseWriter, r *http.Request) {
+	//TODO: Print selected images first
+	r.ParseForm()
+	selectedImages := r.Form["selectedImages[]"]
 	gallery, err := g.galleryByID(w, r, userMustOwnGallery)
 	if err != nil {
 		return
 	}
-	err = g.GalleryService.DeleteImage(gallery.ID, filename)
-	if err != nil {
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
-		return
+
+	var eg errgroup.Group
+	for _, filename := range selectedImages {
+		filenameBase := filepath.Base(filename)
+
+		eg.Go(func() error {
+			return g.GalleryService.DeleteImage(gallery.ID, filenameBase)
+		})
 	}
+
+	err = eg.Wait()
+	if err != nil {
+		http.Error(w, "Unable to delete all selected images", http.StatusInternalServerError)
+		return
+
+	}
+
 	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
 	http.Redirect(w, r, editPath, http.StatusFound)
 }
-
-//ToDo: Add multidelete
 
 // Handle uploading images
 func (g Galleries) UploadImage(w http.ResponseWriter, r *http.Request) {
