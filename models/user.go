@@ -55,7 +55,7 @@ func (us *UserService) Create(email, password string) (*User, error) {
 }
 
 // Authenticate a user with the provided email and password
-func (us UserService) Authenticate(email, password string) (*User, error) {
+func (us *UserService) Authenticate(email, password string) (*User, error) {
 	email = strings.ToLower(email)
 	user := User{
 		Email: email,
@@ -89,6 +89,18 @@ func (us *UserService) UpdatePassword(userID int, password string) error {
 		WHERE id = $1;`, userID, passwordHash)
 	if err != nil {
 		return fmt.Errorf("update password: %w", err)
+	}
+	return nil
+}
+
+// Update the email of the user
+func (us *UserService) UpdateEmail(userID int, email string) error {
+	_, err := us.DB.Exec(`
+	  UPDATE users
+		SET email = $2
+		WHERE id = $1;`, userID, email)
+	if err != nil {
+		return fmt.Errorf("update email: %w", err)
 	}
 	return nil
 }

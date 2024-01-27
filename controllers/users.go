@@ -13,16 +13,20 @@ import (
 // Users type for user controllers
 type Users struct {
 	Templates struct {
-		SignUp         Template
-		SignIn         Template
-		ForgotPassword Template
-		CheckYourEmail Template
-		ResetPassword  Template
+		SignUp                Template
+		SignIn                Template
+		ForgotPassword        Template
+		CheckYourEmail        Template
+		ResetPassword         Template
+		Setting               Template
+		EmailUpdateSuccess    Template
+		PasswordChangeSuccess Template
 	}
 	UserService          *models.UserService
 	SessionService       *models.SessionService
 	PasswordResetService *models.PasswordResetService
 	EmailService         *models.EmailService
+	EmailResetService    *models.EmailResetService
 }
 
 // User middleware
@@ -249,4 +253,90 @@ func (u Users) ProcessResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	setCookie(w, CookieSession, session.Token)
 	http.Redirect(w, r, "/galleries", http.StatusFound)
+}
+
+// Render setting's page
+func (u Users) RenderSetting(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Email string
+	}
+	user := context.User(r.Context())
+	data.Email = user.Email
+	u.Templates.Setting.Execute(w, r, data)
+}
+
+// Process password update when signed in
+func (u Users) ProcessUpdatePassword(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Password string
+	}
+	data.Password = r.FormValue("password")
+	user := context.User(r.Context())
+	err := u.UserService.UpdatePassword(user.ID, data.Password)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		return
+	}
+	u.Templates.PasswordChangeSuccess.Execute(w, r, data)
+}
+
+// Send email-reset email to the new email account and redirect to a email-sent confirmation page
+func (u Users) ProcessUpdateEmail(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Email string
+	}
+	data.Email = r.FormValue("email")
+	user := context.User(r.Context())
+	emailReset, err := u.EmailResetService.Create(user.ID)
+	if err != nil {
+		// TODO: Handle other cases in the future. For instance,
+		// if a user doesn't exist with the email address.
+		fmt.Println(err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		return
+	}
+
+	vals := url.Values{
+		"token": {emailReset.Token},
+		"email": {data.Email},
+	}
+	// TODO: Make the URL here configurable
+	resetURL := "https://www.lenslocked.com/setting/reset-email?" + vals.Encode()
+	err = u.EmailService.SendUpdateEmail(data.Email, resetURL)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		return
+	}
+
+	u.Templates.CheckYourEmail.Execute(w, r, data)
+
+}
+
+// Process email reset after user clicks on the reset link
+func (u Users) ProcessResetEmail(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Token string
+		Email string
+	}
+	data.Token = r.FormValue("token")
+	data.Email = r.FormValue("email")
+
+	user, err := u.EmailResetService.Consume(data.Token)
+	if err != nil {
+		fmt.Println(err)
+		// TODO: Distinguish between server errors and invalid token errors.
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		return
+	}
+	// Update the user's email
+	err = u.UserService.UpdateEmail(user.ID, data.Email)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		return
+	}
+
+	u.Templates.EmailUpdateSuccess.Execute(w, r, data)
 }
