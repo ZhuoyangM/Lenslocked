@@ -201,7 +201,7 @@ func main() {
 	r.Use(userMw.SetUser) //applied everywhere
 
 	tpl := views.Must(views.ParseFS(templates.FS, "home.gohtml", "tailwind.gohtml"))
-	r.Get("/", controllers.StaticHandler(tpl))
+	r.With(userMw.RequireUser).Get("/", controllers.StaticHandler(tpl))
 
 	tpl = views.Must(views.ParseFS(templates.FS, "contact.gohtml", "tailwind.gohtml"))
 	r.Get("/contact", controllers.StaticHandler(tpl))
@@ -218,11 +218,6 @@ func main() {
 	r.Get("/reset-pw", usersC.ResetPassword)
 	r.Post("/reset-pw", usersC.ProcessResetPassword)
 	r.With(userMw.RequireUser).Post("/signout", usersC.ProcessSignOut)
-
-	r.Route("/users/me", func(r chi.Router) { //mounts on the pattern /users/me
-		r.Use(userMw.RequireUser)
-		r.Get("/", usersC.CurrentUser)
-	})
 
 	r.Route("/setting", func(r chi.Router) {
 		r.Use(userMw.RequireUser)
