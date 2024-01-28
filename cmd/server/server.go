@@ -105,8 +105,12 @@ func main() {
 	pwResetService := &models.PasswordResetService{
 		DB: db,
 	}
+
 	emailService := models.NewEmailService(cfg.SMTP)
 
+	emailResetService := &models.EmailResetService{
+		DB: db,
+	}
 	galleryService := &models.GalleryService{
 		DB: db,
 	}
@@ -127,6 +131,7 @@ func main() {
 		SessionService:       sessionService,
 		PasswordResetService: pwResetService,
 		EmailService:         emailService,
+		EmailResetService:    emailResetService,
 	}
 
 	usersC.Templates.SignUp = views.Must(views.ParseFS(
@@ -148,6 +153,18 @@ func main() {
 	usersC.Templates.ResetPassword = views.Must(views.ParseFS(
 		templates.FS,
 		"reset-password.gohtml", "tailwind.gohtml",
+	))
+	usersC.Templates.Setting = views.Must(views.ParseFS(
+		templates.FS,
+		"setting.gohtml", "tailwind.gohtml",
+	))
+	usersC.Templates.EmailUpdateSuccess = views.Must(views.ParseFS(
+		templates.FS,
+		"email-successful-reset.gohtml", "tailwind.gohtml",
+	))
+	usersC.Templates.PasswordChangeSuccess = views.Must(views.ParseFS(
+		templates.FS,
+		"password-successful-reset.gohtml", "tailwind.gohtml",
 	))
 
 	galleriesC := controllers.Galleries{
@@ -178,19 +195,13 @@ func main() {
 		ProviderConfigs: cfg.OAuthProviders,
 	}
 
-	settingC := controllers.Setting{}
-	settingC.Templates.New = views.Must(views.ParseFS(
-		templates.FS,
-		"setting.gohtml", "tailwind.gohtml",
-	))
-
 	// Set up routers and routes
 	r := chi.NewRouter()
 	r.Use(csrfMw)
 	r.Use(userMw.SetUser) //applied everywhere
 
 	tpl := views.Must(views.ParseFS(templates.FS, "home.gohtml", "tailwind.gohtml"))
-	r.Get("/", controllers.StaticHandler(tpl))
+	r.With(userMw.RequireUser).Get("/", controllers.StaticHandler(tpl))
 
 	tpl = views.Must(views.ParseFS(templates.FS, "contact.gohtml", "tailwind.gohtml"))
 	r.Get("/contact", controllers.StaticHandler(tpl))
@@ -208,14 +219,12 @@ func main() {
 	r.Post("/reset-pw", usersC.ProcessResetPassword)
 	r.With(userMw.RequireUser).Post("/signout", usersC.ProcessSignOut)
 
-	r.Route("/users/me", func(r chi.Router) { //mounts on the pattern /users/me
-		r.Use(userMw.RequireUser)
-		r.Get("/", usersC.CurrentUser)
-	})
-
 	r.Route("/setting", func(r chi.Router) {
 		r.Use(userMw.RequireUser)
-		r.Get("/", settingC.RenderSetting)
+		r.Get("/", usersC.RenderSetting)
+		r.Post("/update-password", usersC.ProcessUpdatePassword)
+		r.Post("/update-email", usersC.ProcessUpdateEmail)
+		r.Get("/reset-email", usersC.ProcessResetEmail)
 	})
 
 	r.Route("/galleries", func(r chi.Router) {
