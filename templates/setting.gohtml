@@ -13,29 +13,32 @@
                     <label for="email" class="block text-sm font-medium text-gray-800">New Email:</label>
                     <input type="email" id="email" name="email" class="mt-1 w-full rounded-md border p-2" />
                 </div>
-
-                <button type="submit" class="w-full rounded bg-blue-500 px-8 py-2 text-lg font-bold text-white hover:bg-blue-700">Reset Email</button>
+                <div class="py-4">
+                    <button type="submit" 
+                            class="w-full rounded bg-blue-500 px-8 py-2 text-lg font-bold text-white hover:bg-blue-700">
+                            Reset Email
+                    </button>
+                </div>
             </form>
         </div>
 
         <!-- Reset Password Section -->
         <div class="mb-8">
             <h2 class="mb-2 text-xl font-semibold">Reset Password</h2>
-            <form action="/setting/update-password" method="post">
+            <form action="/setting/update-password" method="post" onSubmit="return validateForm()">
                 {{csrfField}}
-                <div class="mb-4">
-                    <label for="password" class="block text-sm font-medium text-gray-800">New Password:</label>
-                    <input type="password" id="password" name="password" class="mt-1 w-full rounded-md border p-2" />
+                {{template "password-section" .}}
+                <div class="py-4">
+                    <button type="submit" 
+                            class="w-full rounded bg-blue-500 px-8 py-2 text-lg font-bold text-white hover:bg-blue-700">
+                            Reset Password
+                    </button>
                 </div>
-
-                <div class="mb-4">
-                    <label for="confirmPassword" class="block text-sm font-medium text-gray-800">Confirm Password:</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" class="mt-1 w-full rounded-md border p-2" />
-                </div>
-
-                <button type="submit" class="w-full rounded bg-blue-500 px-8 py-2 text-lg font-bold text-white hover:bg-blue-700">Reset Password</button>
             </form>
         </div>
     </div>
 </div>
+
+{{template "password-func" .}}
+
 {{template "footer" .}}
